@@ -14,23 +14,23 @@ export default function Navbar() {
   const location = useLocation()
 
   return (
-    <nav className="bg-zinc-900 border-b border-zinc-800">
-      <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+    <nav className='bg-[var(--azul)]'>
+      <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between" >
 
         <div className="flex items-center gap-1">
-          {links.map(link => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                location.pathname === link.path
-                  ? 'bg-zinc-700 text-zinc-100'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {links.map(link => {
+            const ativo = location.pathname === link.path
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                className="px-3 py-1.5 rounded-lg text-sm"
+                style={ativo ? { backgroundColor: 'var(--verde)', color: 'var(--bege)' } : undefined}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
         </div>
 
         <div className="flex items-center gap-3">

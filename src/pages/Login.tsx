@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 export default function Login() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [nome, setNome] = useState('')
@@ -15,8 +17,12 @@ export default function Login() {
     setLoading(true)
 
     if (modo === 'login') {
-      const { error } = await supabase.auth.signInWithPassword({ email, password: senha })
-      if (error) setErro('Email ou senha incorretos.')
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha })
+      if (error) {
+        setErro('Email ou senha incorretos.')
+      } else if (data.session) {
+        navigate('/')
+      }
     } else {
       const { error } = await supabase.auth.signUp({
         email,
@@ -44,21 +50,19 @@ export default function Login() {
           <div className="flex mb-6 bg-zinc-800 rounded-lg p-1">
             <button
               onClick={() => setModo('login')}
-              className={`flex-1 text-sm py-1.5 rounded-md transition-colors ${
-                modo === 'login'
-                  ? 'bg-zinc-600 text-zinc-100'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
+              className={`flex-1 text-sm py-1.5 rounded-md transition-colors ${modo === 'login'
+                ? 'bg-zinc-600 text-zinc-100'
+                : 'text-zinc-400 hover:text-zinc-200'
+                }`}
             >
               Entrar
             </button>
             <button
               onClick={() => setModo('cadastro')}
-              className={`flex-1 text-sm py-1.5 rounded-md transition-colors ${
-                modo === 'cadastro'
-                  ? 'bg-zinc-600 text-zinc-100'
-                  : 'text-zinc-400 hover:text-zinc-200'
-              }`}
+              className={`flex-1 text-sm py-1.5 rounded-md transition-colors ${modo === 'cadastro'
+                ? 'bg-zinc-600 text-zinc-100'
+                : 'text-zinc-400 hover:text-zinc-200'
+                }`}
             >
               Cadastrar
             </button>

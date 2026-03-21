@@ -22,7 +22,7 @@ function RotaProtegida({ children }: { children: React.ReactNode }) {
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="min-h-screen bg-fundo text-texto">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-6">
         {children}

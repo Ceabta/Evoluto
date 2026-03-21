@@ -14,8 +14,8 @@ export default function Navbar() {
   const location = useLocation()
 
   return (
-    <nav className='bg-[var(--azul)]'>
-      <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between" >
+    <nav className="bg-card border-b border-borda">
+      <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
 
         <div className="flex items-center gap-1">
           {links.map(link => {
@@ -24,8 +24,11 @@ export default function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className="px-3 py-1.5 rounded-lg text-sm"
-                style={ativo ? { backgroundColor: 'var(--verde)', color: 'var(--bege)' } : undefined}
+                className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                  ativo
+                    ? 'bg-destaque text-fundo font-medium'
+                    : 'text-texto-muted hover:text-texto hover:bg-borda'
+                }`}
               >
                 {link.label}
               </Link>
@@ -34,12 +37,12 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-xs text-zinc-500 hidden sm:block">
+          <span className="text-xs text-texto-muted hidden sm:block">
             {user?.email}
           </span>
           <button
             onClick={signOut}
-            className="text-xs text-zinc-400 hover:text-zinc-200 transition-colors"
+            className="text-xs text-texto-muted hover:text-texto transition-colors"
           >
             Sair
           </button>

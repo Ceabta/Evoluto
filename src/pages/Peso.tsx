@@ -140,7 +140,7 @@ export default function Peso() {
             type="date"
             value={data}
             onChange={e => setData(e.target.value)}
-            className="flex-1 bg-fundo border border-borda rounded-lg px-3 py-2 text-sm text-texto outline-none focus:border-azul"
+            className="w-1/2 sm:flex-1 bg-fundo border border-borda rounded-lg px-3 py-2 text-sm text-texto outline-none focus:border-azul"
           />
           <input
             type="number"
@@ -148,7 +148,7 @@ export default function Peso() {
             onChange={e => setPeso(e.target.value)}
             placeholder="Peso (kg)"
             step="0.1"
-            className="flex-1 bg-fundo border border-borda rounded-lg px-3 py-2 text-sm text-texto outline-none focus:border-azul"
+            className="w-1/2 sm:flex-1 bg-fundo border border-borda rounded-lg px-3 py-2 text-sm text-texto outline-none focus:border-azul"
           />
         </div>
         <div>

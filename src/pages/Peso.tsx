@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import toast from 'react-hot-toast'
 import type { RegistroPeso } from '../types'
 import { Pencil, X } from 'lucide-react'
+import ModalConfirmacao from '../components/ModalConfirmacao'
 
 export default function Peso() {
   const [registros, setRegistros] = useState<RegistroPeso[]>([])
@@ -270,37 +271,13 @@ export default function Peso() {
       )}
 
       {/* Modal de confirmação */}
-      {confirmandoId && ReactDOM.createPortal(
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50"
-          style={{ background: 'rgba(0,0,0,0.6)' }}
-          onClick={() => setConfirmandoId(null)}
-        >
-          <div
-            className="bg-card border border-borda rounded-xl p-6 w-80 space-y-4"
-            onClick={e => e.stopPropagation()}
-          >
-            <h3 className="text-sm font-medium text-texto">Excluir registro</h3>
-            <p className="text-sm text-texto-muted">
-              Tem certeza que deseja excluir este registro de peso? Essa ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setConfirmandoId(null)}
-                className="flex-1 bg-borda text-texto rounded-lg px-4 py-2 text-sm font-medium hover:opacity-80 transition-opacity"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={confirmarRemover}
-                className="flex-1 bg-red-700 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-red-600 transition-colors"
-              >
-                Excluir
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
+      {confirmandoId && (
+        <ModalConfirmacao
+          titulo="Excluir registro"
+          descricao="Tem certeza que deseja excluir este registro de peso? Essa ação não pode ser desfeita."
+          onConfirmar={confirmarRemover}
+          onCancelar={() => setConfirmandoId(null)}
+        />
       )}
 
     </div>

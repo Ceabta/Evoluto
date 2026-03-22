@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import ReactDOM from 'react-dom'
 import toast from 'react-hot-toast'
 import type { RegistroPeso } from '../types'
 import { Pencil, X } from 'lucide-react'
@@ -204,7 +203,7 @@ export default function Peso() {
               <div className="relative">
                 <div className="absolute left-1/2 top-0 bottom-0 w-px bg-borda -translate-x-1/2" />
 
-                {registrosMes.map((registro, index) => {
+                {registrosMes.map((registro, _index) => {
                   const globalIndex = registros.findIndex(r => r.id === registro.id)
                   const anterior = registros[globalIndex + 1]
                   const diff = anterior ? registro.peso_kg - anterior.peso_kg : null

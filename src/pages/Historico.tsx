@@ -98,7 +98,7 @@ export default function Historico() {
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-sm font-medium text-zinc-200">{exercicio.nome}</p>
                         {exercicio.grupo_muscular && (
-                          <span className="text-xs text-zinc-500">{exercicio.grupo_muscular}</span>
+                          <p className="text-xs text-texto-muted">{exercicio.grupo_muscular.nome}</p>
                         )}
                       </div>
                       <div className="space-y-1">

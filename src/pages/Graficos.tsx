@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import type { Exercicio } from '../types'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, Legend
+  Tooltip, ResponsiveContainer
 } from 'recharts'
 
 interface PontoGraficoPeso {

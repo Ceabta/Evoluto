@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { Dumbbell, Weight, History, TrendingUp } from 'lucide-react'
+import CardResumo from '../components/CardResumo'
+import CardAtalho from '../components/CardAtalho'
 import type { RegistroTreino, RegistroPeso } from '../types'
 
 export default function Dashboard() {
@@ -19,13 +21,13 @@ export default function Dashboard() {
           .select('*')
           .order('data', { ascending: false })
           .limit(1)
-          .single(),
+          .maybeSingle(),
         supabase
           .from('registros_peso')
           .select('*')
           .order('data', { ascending: false })
           .limit(1)
-          .single(),
+          .maybeSingle(),
         supabase
           .from('registros_treino')
           .select('*', { count: 'exact', head: true }),
@@ -43,84 +45,66 @@ export default function Dashboard() {
   const nome = user?.user_metadata?.nome ?? user?.email
 
   if (loading) return (
-    <div className="text-zinc-500 text-sm">Carregando...</div>
+    <div className="text-texto-muted text-sm">Carregando...</div>
   )
 
   return (
     <div className="space-y-6">
 
       <div>
-        <h2 className="text-xl font-semibold text-zinc-100">
+        <h2 className="text-xl font-semibold text-texto">
           Olá, {nome} 👋
         </h2>
-        <p className="text-zinc-400 text-sm mt-1">
+        <p className="text-texto-muted text-sm mt-1">
           {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-xs text-zinc-500 mb-1">Total de treinos</p>
-          <p className="text-3xl font-semibold text-zinc-100">{totalTreinos}</p>
-        </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-xs text-zinc-500 mb-1">Último treino</p>
-          <p className="text-lg font-semibold text-zinc-100">
-            {ultimoTreino
-              ? new Date(ultimoTreino.data + 'T00:00:00').toLocaleDateString('pt-BR')
-              : '—'}
-          </p>
-        </div>
-
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
-          <p className="text-xs text-zinc-500 mb-1">Último peso</p>
-          <p className="text-lg font-semibold text-zinc-100">
-            {ultimoPeso ? `${ultimoPeso.peso_kg} kg` : '—'}
-          </p>
-        </div>
+        <CardResumo
+          label="Total de treinos"
+          valor={totalTreinos}
+          destaque
+        />
+        <CardResumo
+          label="Último treino"
+          valor={ultimoTreino
+            ? new Date(ultimoTreino.data + 'T00:00:00').toLocaleDateString('pt-BR')
+            : '—'}
+        />
+        <CardResumo
+          label="Último peso"
+          valor={ultimoPeso ? `${ultimoPeso.peso_kg} kg` : '—'}
+        />
       </div>
 
+      <div className="h-px flex-1 bg-borda sm:hidden" />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Link
+        <CardAtalho
           to="/treino"
-          className="bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-xl p-5 transition-colors group"
-        >
-          <p className="text-sm font-medium text-zinc-100 group-hover:text-white">
-            Registrar treino
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">Adicione os exercícios de hoje</p>
-        </Link>
-
-        <Link
+          titulo="Registrar treino"
+          descricao="Adicione os exercícios de hoje"
+          icon={Dumbbell}
+        />
+        <CardAtalho
           to="/peso"
-          className="bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-xl p-5 transition-colors group"
-        >
-          <p className="text-sm font-medium text-zinc-100 group-hover:text-white">
-            Registrar peso
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">Atualize seu peso corporal</p>
-        </Link>
-
-        <Link
+          titulo="Registrar peso"
+          descricao="Atualize seu peso corporal"
+          icon={Weight}
+        />
+        <CardAtalho
           to="/historico"
-          className="bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-xl p-5 transition-colors group"
-        >
-          <p className="text-sm font-medium text-zinc-100 group-hover:text-white">
-            Ver histórico
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">Seus treinos anteriores</p>
-        </Link>
-
-        <Link
+          titulo="Ver histórico"
+          descricao="Seus treinos anteriores"
+          icon={History}
+        />
+        <CardAtalho
           to="/graficos"
-          className="bg-zinc-900 border border-zinc-800 hover:border-zinc-600 rounded-xl p-5 transition-colors group"
-        >
-          <p className="text-sm font-medium text-zinc-100 group-hover:text-white">
-            Ver evolução
-          </p>
-          <p className="text-xs text-zinc-500 mt-1">Gráficos de carga e peso</p>
-        </Link>
+          titulo="Ver evolução"
+          descricao="Gráficos de carga e peso"
+          icon={TrendingUp}
+        />
       </div>
 
     </div>

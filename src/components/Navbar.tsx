@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { Menu, X, LayoutDashboard, Dumbbell, Weight, History, TrendingUp } from 'lucide-react'
+import { Menu, X, LayoutDashboard, Dumbbell, Scale, History, TrendingUp } from 'lucide-react'
 
 const links = [
   { path: '/', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/treino', label: 'Treino', icon: Dumbbell },
-  { path: '/peso', label: 'Peso', icon: Weight },
+  { path: '/peso', label: 'Peso', icon: Scale },
   { path: '/historico', label: 'Histórico', icon: History },
   { path: '/graficos', label: 'Gráficos', icon: TrendingUp },
 ]
@@ -19,56 +19,60 @@ export default function Navbar() {
   return (
     <>
       <nav className="bg-card border-b border-borda">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="px-4 h-14 flex items-center ">
 
-          {/* Botão hamburguer — só no mobile */}
-          <button
-            onClick={() => setMenuAberto(true)}
-            className="sm:hidden text-texto-muted hover:text-texto transition-colors"
-          >
-            <Menu size={22} />
-          </button>
-
-          <div className="flex items-center gap-4">
+          {/* Esquerda — logo e nome */}
+          <div className="flex items-center gap-2 w-1/2">
+            <img src="/logo.png" alt="Evoluto" className="w-7 h-7" />
             <span className="text-sm font-semibold text-destaque hidden sm:block">Evoluto</span>
+          </div>
 
-            {/* Links — só no desktop */}
-            <div className="hidden sm:flex items-center gap-1">
-              {links.map(link => {
-                const ativo = location.pathname === link.path
-                return (
-                  <Link
-                    key={link.path}
-                    to={link.path}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ativo
+          {/* Centro — links desktop */}
+          <div className="hidden sm:flex items-center gap-1 ml-10 w-1/2">
+            {links.map(link => {
+              const ativo = location.pathname === link.path
+              return (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                    ativo
                       ? 'bg-destaque text-fundo font-medium'
                       : 'text-texto-muted hover:text-texto hover:bg-borda'
-                      }`}
-                  >
-                    <link.icon size={15} />
-                    {link.label}
-                  </Link>
-                )
-              })}
-            </div>
+                  }`}
+                >
+                  <link.icon size={15} />
+                  {link.label}
+                </Link>
+              )
+            })}
+          </div>
 
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-texto-muted hidden sm:block">
-                {user?.email}
-              </span>
-              <button
-                onClick={signOut}
-                className="text-xs text-texto-muted hover:text-texto transition-colors"
-              >
-                Sair
-              </button>
-            </div>
+          {/* Direita — email e sair */}
+          <div className="flex items-center gap-3 w-1/2 justify-end ">
+            <span className="text-xs text-texto-muted hidden sm:block">
+              {user?.email}
+            </span>
+            <button
+              onClick={signOut}
+              className="text-xs text-red-500 hover:text-red-400 transition-colors hidden sm:block"
+            >
+              Sair
+            </button>
+
+            {/* Hamburguer mobile */}
+            <button
+              onClick={() => setMenuAberto(true)}
+              className="sm:hidden text-texto-muted hover:text-texto transition-colors"
+            >
+              <Menu size={22} />
+            </button>
           </div>
 
         </div>
       </nav>
 
-      {/* Overlay — só no mobile */}
+      {/* Overlay mobile */}
       {menuAberto && (
         <div
           className="fixed inset-0 z-40 sm:hidden"
@@ -77,13 +81,16 @@ export default function Navbar() {
         />
       )}
 
-      {/* Menu lateral — só no mobile */}
-      <div className={`fixed top-0 left-0 h-full w-64 bg-card border-r border-borda z-50 flex flex-col transition-transform duration-300 sm:hidden ${menuAberto ? 'translate-x-0' : '-translate-x-full'
-        }`}>
+      {/* Menu lateral mobile */}
+      <div className={`fixed top-0 left-0 h-full w-64 bg-card border-r border-borda z-50 flex flex-col transition-transform duration-300 sm:hidden ${
+        menuAberto ? 'translate-x-0' : '-translate-x-full'
+      }`}>
 
-        {/* Header do menu */}
         <div className="flex items-center justify-between px-5 h-14 border-b border-borda">
-          <span className="text-sm font-medium text-texto">Menu</span>
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="Evoluto" className="w-6 h-6" />
+            <span className="text-sm font-semibold text-destaque">Evoluto</span>
+          </div>
           <button
             onClick={() => setMenuAberto(false)}
             className="text-texto-muted hover:text-texto transition-colors"
@@ -92,7 +99,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Links */}
         <div className="flex flex-col gap-1 p-3 flex-1">
           {links.map(link => {
             const ativo = location.pathname === link.path
@@ -101,10 +107,11 @@ export default function Navbar() {
                 key={link.path}
                 to={link.path}
                 onClick={() => setMenuAberto(false)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors ${ativo
-                  ? 'bg-destaque text-fundo font-medium'
-                  : 'text-texto-muted hover:text-texto hover:bg-borda'
-                  }`}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors ${
+                  ativo
+                    ? 'bg-destaque text-fundo font-medium'
+                    : 'text-texto-muted hover:text-texto hover:bg-borda'
+                }`}
               >
                 <link.icon size={17} />
                 {link.label}
@@ -113,12 +120,11 @@ export default function Navbar() {
           })}
         </div>
 
-        {/* Footer do menu */}
         <div className="p-4 border-t border-borda">
           <p className="text-xs text-texto-muted mb-3 truncate">{user?.email}</p>
           <button
             onClick={signOut}
-            className="w-full text-sm text-texto-muted hover:text-texto transition-colors text-left"
+            className="w-full text-sm text-red-500 hover:text-red-400 transition-colors text-left"
           >
             Sair
           </button>

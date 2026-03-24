@@ -16,7 +16,7 @@ export default function Historico() {
     async function carregar() {
       const { data: registros } = await supabase
         .from('registros_treino')
-        .select('*')
+        .select('*, series!inner(id)')
         .order('data', { ascending: false })
         .limit(20)
 

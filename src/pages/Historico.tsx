@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import type { RegistroTreino, Serie, Exercicio } from '../types'
 
 interface TreinoComSeries extends RegistroTreino {
@@ -25,9 +26,9 @@ export default function Historico() {
         registros.map(async registro => {
           const { data: series } = await supabase
             .from('series')
-            .select('*, exercicio:exercicios(*)')
+            .select('*, exercicio:exercicios(*, grupo_muscular:grupos_musculares(*))')
             .eq('registro_id', registro.id)
-            .order('numero_serie')
+            .order('criado_em')
 
           return { ...registro, series: (series as any) ?? [] }
         })
@@ -40,26 +41,33 @@ export default function Historico() {
     carregar()
   }, [])
 
-  if (loadingPagina) return <div className="text-zinc-500 text-sm">Carregando...</div>
+  if (loadingPagina) return <div className="text-texto-muted text-sm">Carregando...</div>
 
   const exerciciosPorTreino = (treino: TreinoComSeries) => {
-    const ids = [...new Set(treino.series.map(s => s.exercicio_id))]
-    return ids.map(id => ({
-      exercicio: treino.series.find(s => s.exercicio_id === id)!.exercicio,
-      series: treino.series.filter(s => s.exercicio_id === id),
-    }))
+    return treino.series.reduce<{ exercicio: Exercicio, series: (Serie & { exercicio: Exercicio })[] }[]>((acc, serie) => {
+      const existe = acc.find(e => e.exercicio.id === serie.exercicio_id)
+      if (existe) {
+        existe.series.push(serie)
+      } else {
+        acc.push({
+          exercicio: (serie as any).exercicio,
+          series: [serie],
+        })
+      }
+      return acc
+    }, [])
   }
 
   return (
     <div className="space-y-6">
 
       <div>
-        <h2 className="text-xl font-semibold text-zinc-100">Histórico</h2>
-        <p className="text-zinc-400 text-sm mt-1">Seus últimos 20 treinos</p>
+        <h2 className="text-xl font-semibold text-texto">Histórico</h2>
+        <p className="text-texto-muted text-sm mt-1">Seus últimos 20 treinos</p>
       </div>
 
       {treinos.length === 0 && (
-        <p className="text-zinc-500 text-sm text-center py-8">
+        <p className="text-texto-muted text-sm text-center py-8">
           Nenhum treino registrado ainda.
         </p>
       )}
@@ -69,45 +77,69 @@ export default function Historico() {
           const exercicios = exerciciosPorTreino(treino)
           const estaAberto = aberto === treino.id
 
+          const exerciciosPorGrupo = exercicios.reduce<Record<string, { nome: string, itens: typeof exercicios }>>((acc, item) => {
+            const ex = item.exercicio as any
+            const chave = ex.grupo_muscular?.nome ?? '__sem_grupo__'
+            const nome = ex.grupo_muscular?.nome ?? 'Sem grupo'
+            if (!acc[chave]) acc[chave] = { nome, itens: [] }
+            acc[chave].itens.push(item)
+            return acc
+          }, {})
+
           return (
-            <div key={treino.id} className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+            <div key={treino.id} className="bg-card border border-borda rounded-xl overflow-hidden">
 
               <button
                 onClick={() => setAberto(estaAberto ? null : treino.id)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-zinc-800 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-fundo transition-colors"
               >
                 <div className="text-left">
-                  <p className="text-sm font-medium text-zinc-100">
+                  <p className="text-sm font-medium text-texto">
                     {new Date(treino.data + 'T00:00:00').toLocaleDateString('pt-BR', {
                       weekday: 'long', day: 'numeric', month: 'long'
                     })}
                   </p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
+                  <p className="text-xs text-texto-muted mt-0.5">
                     {exercicios.length} exercício(s) · {treino.series.length} série(s)
                   </p>
                 </div>
-                <span className="text-zinc-500 text-sm">
-                  {estaAberto ? '▲' : '▼'}
-                </span>
+                {estaAberto
+                  ? <ChevronUp size={16} className="text-texto-muted" />
+                  : <ChevronDown size={16} className="text-texto-muted" />
+                }
               </button>
 
               {estaAberto && (
-                <div className="px-5 pb-4 space-y-3 border-t border-zinc-800 pt-4">
-                  {exercicios.map(({ exercicio, series }) => (
-                    <div key={exercicio.id}>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium text-zinc-200">{exercicio.nome}</p>
-                        {exercicio.grupo_muscular && (
-                          <p className="text-xs text-texto-muted">{exercicio.grupo_muscular.nome}</p>
-                        )}
+                <div className="border-t border-borda">
+                  {Object.entries(exerciciosPorGrupo).map(([chave, { nome, itens }]) => (
+                    <div key={chave}>
+                      <div className="flex items-center gap-3 px-5 py-2">
+                        <div className="h-px flex-1 bg-borda" />
+                        <span className="text-xs font-medium text-destaque uppercase tracking-wider">
+                          {nome}
+                        </span>
+                        <div className="h-px flex-1 bg-borda" />
                       </div>
-                      <div className="space-y-1">
-                        {series.map(serie => (
-                          <div key={serie.id} className="flex items-center justify-between bg-zinc-800 rounded-lg px-3 py-2">
-                            <span className="text-xs text-zinc-500">Série {serie.numero_serie}</span>
-                            <span className="text-sm text-zinc-100">
-                              {serie.carga_kg}kg × {serie.repeticoes} reps
-                            </span>
+
+                      <div className="px-5 pb-3 space-y-3">
+                        {itens.map(({ exercicio, series }) => (
+                          <div key={exercicio.id} className="bg-fundo border border-borda rounded-xl overflow-hidden">
+                            <div className="px-4 py-2 border-b border-borda">
+                              <p className="text-sm font-medium text-texto">{exercicio.nome}</p>
+                            </div>
+                            <div className="divide-y divide-borda">
+                              {series.map(serie => (
+                                <div key={serie.id} className="flex items-center justify-between px-4 py-2">
+                                  <span className="text-xs text-texto-muted">Série {serie.numero_serie}</span>
+                                  <span className="text-sm text-texto font-medium">
+                                    {serie.carga_kg !== null
+                                      ? `${serie.carga_kg}kg × ${serie.repeticoes} reps`
+                                      : `${serie.duracao_min}min${serie.distancia_km ? ` · ${serie.distancia_km}km` : ''}`
+                                    }
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -115,7 +147,7 @@ export default function Historico() {
                   ))}
 
                   {treino.observacao && (
-                    <p className="text-xs text-zinc-400 mt-2 italic">{treino.observacao}</p>
+                    <p className="text-xs text-texto-muted px-5 pb-4 italic">{treino.observacao}</p>
                   )}
                 </div>
               )}

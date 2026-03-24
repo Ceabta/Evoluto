@@ -16,17 +16,27 @@ interface PontoGraficoExercicio {
   carga: number
 }
 
+interface PontoGraficoCardio {
+  data: string
+  duracao: number
+  distancia: number | null
+}
+
 export default function Graficos() {
   const [exercicios, setExercicios] = useState<Exercicio[]>([])
   const [exercicioSelecionado, setExercicioSelecionado] = useState('')
   const [dadosPeso, setDadosPeso] = useState<PontoGraficoPeso[]>([])
   const [dadosExercicio, setDadosExercicio] = useState<PontoGraficoExercicio[]>([])
+  const [dadosCardio, setDadosCardio] = useState<PontoGraficoCardio[]>([])
   const [loadingPagina, setLoadingPagina] = useState(true)
+
+  const exercicioAtual = exercicios.find(ex => ex.id === exercicioSelecionado)
+  const isCardio = exercicioAtual?.tipo === 'cardio'
 
   useEffect(() => {
     async function carregar() {
       const [{ data: exs }, { data: pesos }] = await Promise.all([
-        supabase.from('exercicios').select('*').order('nome'),
+        supabase.from('exercicios').select('*, grupo_muscular:grupos_musculares(*)').order('nome'),
         supabase.from('registros_peso').select('*').order('data'),
       ])
 
@@ -53,39 +63,62 @@ export default function Graficos() {
         .from('series')
         .select('*, registro:registros_treino(data)')
         .eq('exercicio_id', exercicioSelecionado)
-        .order('numero_serie')
+        .order('criado_em')
 
       if (!series) return
 
-      const porData: Record<string, number> = {}
-      series.forEach((s: any) => {
-        const data = s.registro?.data
-        if (!data) return
-        if (!porData[data] || s.carga_kg > porData[data]) {
-          porData[data] = s.carga_kg
-        }
-      })
+      if (isCardio) {
+        const porData: Record<string, { duracao: number, distancia: number | null }> = {}
+        series.forEach((s: any) => {
+          const data = s.registro?.data
+          if (!data) return
+          if (!porData[data]) {
+            porData[data] = { duracao: s.duracao_min ?? 0, distancia: s.distancia_km }
+          } else {
+            porData[data].duracao += s.duracao_min ?? 0
+          }
+        })
 
-      const pontos = Object.entries(porData)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .map(([data, carga]) => ({
-          data: new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }),
-          carga,
-        }))
+        const pontos = Object.entries(porData)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([data, { duracao, distancia }]) => ({
+            data: new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }),
+            duracao,
+            distancia,
+          }))
 
-      setDadosExercicio(pontos)
+        setDadosCardio(pontos)
+      } else {
+        const porData: Record<string, number> = {}
+        series.forEach((s: any) => {
+          const data = s.registro?.data
+          if (!data) return
+          if (!porData[data] || s.carga_kg > porData[data]) {
+            porData[data] = s.carga_kg
+          }
+        })
+
+        const pontos = Object.entries(porData)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([data, carga]) => ({
+            data: new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' }),
+            carga,
+          }))
+
+        setDadosExercicio(pontos)
+      }
     }
 
     carregarExercicio()
-  }, [exercicioSelecionado])
+  }, [exercicioSelecionado, isCardio])
 
-  if (loadingPagina) return <div className="text-zinc-500 text-sm">Carregando...</div>
+  if (loadingPagina) return <div className="text-texto-muted text-sm">Carregando...</div>
 
   const tooltipStyle = {
-    backgroundColor: '#18181b',
-    border: '1px solid #3f3f46',
+    backgroundColor: 'var(--card)',
+    border: '1px solid var(--borda)',
     borderRadius: '8px',
-    color: '#f4f4f5',
+    color: 'var(--texto)',
     fontSize: '12px',
   }
 
@@ -93,25 +126,25 @@ export default function Graficos() {
     <div className="space-y-8">
 
       <div>
-        <h2 className="text-xl font-semibold text-zinc-100">Evolução</h2>
-        <p className="text-zinc-400 text-sm mt-1">Acompanhe sua progressão ao longo do tempo</p>
+        <h2 className="text-xl font-semibold text-texto">Evolução</h2>
+        <p className="text-texto-muted text-sm mt-1">Acompanhe sua progressão ao longo do tempo</p>
       </div>
 
       {/* Gráfico de peso */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
-        <p className="text-sm font-medium text-zinc-200 mb-4">Peso corporal</p>
+      <div className="bg-card border border-borda rounded-xl p-5">
+        <p className="text-sm font-medium text-texto mb-4">Peso corporal</p>
 
         {dadosPeso.length < 2 ? (
-          <p className="text-zinc-500 text-sm text-center py-8">
+          <p className="text-texto-muted text-sm text-center py-8">
             Registre pelo menos 2 pesos para ver o gráfico.
           </p>
         ) : (
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={dadosPeso}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-              <XAxis dataKey="data" tick={{ fill: '#71717a', fontSize: 11 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--borda)" />
+              <XAxis dataKey="data" tick={{ fill: 'var(--texto-muted)', fontSize: 11 }} />
               <YAxis
-                tick={{ fill: '#71717a', fontSize: 11 }}
+                tick={{ fill: 'var(--texto-muted)', fontSize: 11 }}
                 domain={['auto', 'auto']}
                 unit="kg"
               />
@@ -119,9 +152,9 @@ export default function Graficos() {
               <Line
                 type="monotone"
                 dataKey="peso"
-                stroke="#a1a1aa"
+                stroke="var(--destaque)"
                 strokeWidth={2}
-                dot={{ fill: '#a1a1aa', r: 3 }}
+                dot={{ fill: 'var(--destaque)', r: 3 }}
                 activeDot={{ r: 5 }}
                 name="Peso (kg)"
               />
@@ -130,52 +163,98 @@ export default function Graficos() {
         )}
       </div>
 
-      {/* Gráfico de carga por exercício */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+      {/* Gráfico por exercício */}
+      <div className="bg-card border border-borda rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <p className="text-sm font-medium text-zinc-200">Carga por exercício</p>
+          <p className="text-sm font-medium text-texto">
+            {isCardio ? 'Duração por exercício' : 'Carga por exercício'}
+          </p>
           <select
             value={exercicioSelecionado}
-            onChange={e => setExercicioSelecionado(e.target.value)}
-            className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-sm text-zinc-100 outline-none focus:border-zinc-500"
+            onChange={e => {
+              setExercicioSelecionado(e.target.value)
+              setDadosExercicio([])
+              setDadosCardio([])
+            }}
+            className="bg-fundo border border-borda rounded-lg px-3 py-1.5 text-sm text-texto outline-none focus:border-azul"
           >
             <option value="">Selecione</option>
-            {exercicios.map(ex => (
-              <option key={ex.id} value={ex.id}>{ex.nome}</option>
-            ))}
+            {exercicios
+              .slice()
+              .sort((a, b) => {
+                const grupoA = (a as any).grupo_muscular?.nome ?? 'zzz'
+                const grupoB = (b as any).grupo_muscular?.nome ?? 'zzz'
+                if (grupoA !== grupoB) return grupoA.localeCompare(grupoB)
+                return a.nome.localeCompare(b.nome)
+              })
+              .map(ex => (
+                <option key={ex.id} value={ex.id}>
+                  {(ex as any).grupo_muscular?.nome ? `${(ex as any).grupo_muscular.nome} - ${ex.nome}` : ex.nome}
+                </option>
+              ))}
           </select>
         </div>
 
         {!exercicioSelecionado ? (
-          <p className="text-zinc-500 text-sm text-center py-8">
-            Selecione um exercício para ver a evolução de carga.
+          <p className="text-texto-muted text-sm text-center py-8">
+            Selecione um exercício para ver a evolução.
           </p>
-        ) : dadosExercicio.length < 2 ? (
-          <p className="text-zinc-500 text-sm text-center py-8">
-            Registre pelo menos 2 treinos com este exercício para ver o gráfico.
-          </p>
+        ) : isCardio ? (
+          dadosCardio.length < 2 ? (
+            <p className="text-texto-muted text-sm text-center py-8">
+              Registre pelo menos 2 treinos com este exercício para ver o gráfico.
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={dadosCardio}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--borda)" />
+                <XAxis dataKey="data" tick={{ fill: 'var(--texto-muted)', fontSize: 11 }} />
+                <YAxis
+                  tick={{ fill: 'var(--texto-muted)', fontSize: 11 }}
+                  domain={['auto', 'auto']}
+                  unit="min"
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="duracao"
+                  stroke="var(--azul)"
+                  strokeWidth={2}
+                  dot={{ fill: 'var(--azul)', r: 3 }}
+                  activeDot={{ r: 5 }}
+                  name="Duração (min)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )
         ) : (
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={dadosExercicio}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-              <XAxis dataKey="data" tick={{ fill: '#71717a', fontSize: 11 }} />
-              <YAxis
-                tick={{ fill: '#71717a', fontSize: 11 }}
-                domain={['auto', 'auto']}
-                unit="kg"
-              />
-              <Tooltip contentStyle={tooltipStyle} />
-              <Line
-                type="monotone"
-                dataKey="carga"
-                stroke="#e4e4e7"
-                strokeWidth={2}
-                dot={{ fill: '#e4e4e7', r: 3 }}
-                activeDot={{ r: 5 }}
-                name="Carga máxima (kg)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          dadosExercicio.length < 2 ? (
+            <p className="text-texto-muted text-sm text-center py-8">
+              Registre pelo menos 2 treinos com este exercício para ver o gráfico.
+            </p>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={dadosExercicio}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--borda)" />
+                <XAxis dataKey="data" tick={{ fill: 'var(--texto-muted)', fontSize: 11 }} />
+                <YAxis
+                  tick={{ fill: 'var(--texto-muted)', fontSize: 11 }}
+                  domain={['auto', 'auto']}
+                  unit="kg"
+                />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line
+                  type="monotone"
+                  dataKey="carga"
+                  stroke="var(--destaque)"
+                  strokeWidth={2}
+                  dot={{ fill: 'var(--destaque)', r: 3 }}
+                  activeDot={{ r: 5 }}
+                  name="Carga máxima (kg)"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )
         )}
       </div>
 

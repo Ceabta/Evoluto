@@ -176,7 +176,7 @@ export default function Graficos() {
               setDadosExercicio([])
               setDadosCardio([])
             }}
-            className="bg-fundo border border-borda rounded-lg px-3 py-1.5 text-sm text-texto outline-none focus:border-azul"
+            className="w-full bg-fundo border border-borda rounded-lg px-3 py-1.5 text-sm text-texto outline-none focus:border-azul"
           >
             <option value="">Selecione</option>
             {exercicios
@@ -189,7 +189,7 @@ export default function Graficos() {
               })
               .map(ex => (
                 <option key={ex.id} value={ex.id}>
-                  {(ex as any).grupo_muscular?.nome ? `${(ex as any).grupo_muscular.nome} - ${ex.nome}` : ex.nome}
+                  {ex.nome}
                 </option>
               ))}
           </select>

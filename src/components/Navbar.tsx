@@ -29,36 +29,40 @@ export default function Navbar() {
             <Menu size={22} />
           </button>
 
-          {/* Links — só no desktop */}
-          <div className="hidden sm:flex items-center gap-1">
-            {links.map(link => {
-              const ativo = location.pathname === link.path
-              return (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ativo
-                    ? 'bg-destaque text-fundo font-medium'
-                    : 'text-texto-muted hover:text-texto hover:bg-borda'
-                    }`}
-                >
-                  <link.icon size={15} />
-                  {link.label}
-                </Link>
-              )
-            })}
-          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-semibold text-destaque hidden sm:block">Evoluto</span>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-texto-muted hidden sm:block">
-              {user?.email}
-            </span>
-            <button
-              onClick={signOut}
-              className="text-xs text-texto-muted hover:text-texto transition-colors"
-            >
-              Sair
-            </button>
+            {/* Links — só no desktop */}
+            <div className="hidden sm:flex items-center gap-1">
+              {links.map(link => {
+                const ativo = location.pathname === link.path
+                return (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-colors ${ativo
+                      ? 'bg-destaque text-fundo font-medium'
+                      : 'text-texto-muted hover:text-texto hover:bg-borda'
+                      }`}
+                  >
+                    <link.icon size={15} />
+                    {link.label}
+                  </Link>
+                )
+              })}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-texto-muted hidden sm:block">
+                {user?.email}
+              </span>
+              <button
+                onClick={signOut}
+                className="text-xs text-texto-muted hover:text-texto transition-colors"
+              >
+                Sair
+              </button>
+            </div>
           </div>
 
         </div>
@@ -98,8 +102,8 @@ export default function Navbar() {
                 to={link.path}
                 onClick={() => setMenuAberto(false)}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-colors ${ativo
-                    ? 'bg-destaque text-fundo font-medium'
-                    : 'text-texto-muted hover:text-texto hover:bg-borda'
+                  ? 'bg-destaque text-fundo font-medium'
+                  : 'text-texto-muted hover:text-texto hover:bg-borda'
                   }`}
               >
                 <link.icon size={17} />

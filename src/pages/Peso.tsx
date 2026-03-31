@@ -16,6 +16,28 @@ export default function Peso() {
 
   const formRef = useRef<HTMLDivElement>(null)
 
+  const [diasTreino, setDiasTreino] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    async function carregarDiasTreino() {
+      const { data } = await supabase
+        .from('registros_treino')
+        .select('data')
+        .order('data', { ascending: true })
+
+      if (!data) return
+
+      const contagem: Record<string, number> = {}
+      data.forEach((r: any, index: number) => {
+        contagem[r.data] = index + 1
+      })
+
+      setDiasTreino(contagem)
+    }
+
+    carregarDiasTreino()
+  }, [])
+
   useEffect(() => {
     carregarRegistros()
   }, [])
@@ -226,6 +248,11 @@ export default function Peso() {
                                 weekday: 'short', day: 'numeric'
                               })}
                             </p>
+                            {diasTreino[registro.data] && (
+                              <span className="text-xs font-medium text-destaque">
+                                Dia {diasTreino[registro.data]} de treino
+                              </span>
+                            )}
                             <button
                               onClick={() => setConfirmandoId(registro.id)}
                               className="text-red-700 text-xs transition-colors"

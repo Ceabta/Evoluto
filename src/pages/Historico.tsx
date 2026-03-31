@@ -16,7 +16,7 @@ export default function Historico() {
     async function carregar() {
       const { data: registros } = await supabase
         .from('registros_treino')
-        .select('*, series!inner(id)')
+        .select('*, series(id)')
         .order('data', { ascending: false })
         .limit(20)
 
@@ -76,6 +76,7 @@ export default function Historico() {
         {treinos.map(treino => {
           const exercicios = exerciciosPorTreino(treino)
           const estaAberto = aberto === treino.id
+          const temSeries = treino.series?.length > 0
 
           const exerciciosPorGrupo = exercicios.reduce<Record<string, { nome: string, itens: typeof exercicios }>>((acc, item) => {
             const ex = item.exercicio as any
@@ -90,8 +91,9 @@ export default function Historico() {
             <div key={treino.id} className="bg-card border border-borda rounded-xl overflow-hidden">
 
               <button
-                onClick={() => setAberto(estaAberto ? null : treino.id)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-fundo transition-colors"
+                onClick={() => temSeries ? setAberto(estaAberto ? null : treino.id) : null}
+                className={`w-full flex items-center justify-between px-5 py-4 transition-colors ${temSeries ? 'hover:bg-fundo cursor-pointer' : 'cursor-default'
+                  }`}
               >
                 <div className="text-left">
                   <p className="text-sm font-medium text-texto">
@@ -100,16 +102,20 @@ export default function Historico() {
                     })}
                   </p>
                   <p className="text-xs text-texto-muted mt-0.5">
-                    {exercicios.length} exercício(s) · {treino.series.length} série(s)
+                    {temSeries
+                      ? `${exercicios.length} exercício(s) · ${treino.series.length} série(s)`
+                      : 'Treino registrado'
+                    }
                   </p>
                 </div>
-                {estaAberto
-                  ? <ChevronUp size={16} className="text-texto-muted" />
-                  : <ChevronDown size={16} className="text-texto-muted" />
-                }
+                {temSeries && (
+                  estaAberto
+                    ? <ChevronUp size={16} className="text-texto-muted" />
+                    : <ChevronDown size={16} className="text-texto-muted" />
+                )}
               </button>
 
-              {estaAberto && (
+              {estaAberto && temSeries && (
                 <div className="border-t border-borda">
                   {Object.entries(exerciciosPorGrupo).map(([chave, { nome, itens }]) => (
                     <div key={chave}>

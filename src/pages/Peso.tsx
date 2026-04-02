@@ -248,19 +248,13 @@ export default function Peso() {
                                 weekday: 'short', day: 'numeric'
                               })}
                             </p>
-                            <div className="flex items-center gap-2">
-                              {diasTreino[registro.data] && (
-                                <span className="text-xs font-medium text-destaque hidden sm:block">
-                                  Dia {diasTreino[registro.data]}
-                                </span>
-                              )}
-                              <button
-                                onClick={() => setConfirmandoId(registro.id)}
-                                className="text-red-700 text-xs transition-colors"
-                              >
-                                <X size={18} />
-                              </button>
-                            </div>
+
+                            <button
+                              onClick={() => setConfirmandoId(registro.id)}
+                              className="text-red-700 text-xs transition-colors"
+                            >
+                              <X size={18} />
+                            </button>
                           </div>
                           <p className="text-lg font-semibold text-texto mt-0.5">
                             {registro.peso_kg} kg
@@ -290,7 +284,7 @@ export default function Peso() {
                       {/* Espaço vazio — Dia X apenas no mobile */}
                       <div className="w-[calc(50%-20px)] flex items-center">
                         {diasTreino[registro.data] && (
-                          <span className={`text-xs font-medium text-destaque sm:hidden ${esquerda ? 'text-left' : 'text-right w-full'}`}>
+                          <span className={`text-xs font-medium text-destaque ${esquerda ? 'text-left' : 'text-right w-full'}`}>
                             Dia {diasTreino[registro.data]}
                           </span>
                         )}

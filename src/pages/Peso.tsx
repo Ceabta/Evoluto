@@ -248,11 +248,6 @@ export default function Peso() {
                                 weekday: 'short', day: 'numeric'
                               })}
                             </p>
-                            {diasTreino[registro.data] && (
-                              <span className="text-xs font-medium text-destaque">
-                                Dia {diasTreino[registro.data]} de treino
-                              </span>
-                            )}
                             <button
                               onClick={() => setConfirmandoId(registro.id)}
                               className="text-red-700 text-xs transition-colors"
@@ -260,12 +255,12 @@ export default function Peso() {
                               <X size={18} />
                             </button>
                           </div>
-                          <p className="text-lg font-semibold text-zinc-100 mt-0.5">
+                          <p className="text-lg font-semibold text-texto mt-0.5">
                             {registro.peso_kg} kg
                           </p>
                           <div className="flex items-center justify-between mt-1">
                             {diff !== null ? (
-                              <span className={`text-sm font-medium ${diff < 0 ? 'text-green-400'
+                              <span className={`text-sm font-medium ${diff < 0 ? 'text-destaque'
                                 : diff > 0 ? 'text-red-400' : 'text-zinc-500'}`}>
                                 {diff > 0 ? '+' : ''}{diff.toFixed(2)}kg
                               </span>
@@ -285,8 +280,14 @@ export default function Peso() {
                         <div className={`w-3 h-3 rounded-full border-2 border-zinc-950 ${corBolinha}`} />
                       </div>
 
-                      {/* Espaço vazio */}
-                      <div className="w-[calc(50%-20px)]" />
+                      {/* Espaço vazio — Dia X apenas no mobile */}
+                      <div className="w-[calc(50%-20px)] flex items-center">
+                        {diasTreino[registro.data] && (
+                          <span className={`text-xs font-medium text-destaque sm:hidden ${esquerda ? 'text-left' : 'text-right w-full'}`}>
+                            Dia {diasTreino[registro.data]}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   )
                 })}
